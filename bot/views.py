@@ -41,10 +41,16 @@ def start(message):
     name = message.chat.username
     try:
         user = UserProfile.objects.get(telegram_id=chat_id)
-        bot.send_message(chat_id, "Привіт чим можу допомогти?", reply_markup=create_reply_markup())
+        photo_path = os.path.join(os.getcwd(), 'bot_photo', 'photo_select.jpg')
+        with open(photo_path, 'rb') as photo:
+            clear_user_context(chat_id)
+            bot.send_photo(chat_id, photo, reply_markup=create_reply_markup())
     except UserProfile.DoesNotExist:
         user = UserProfile.objects.create(telegram_id=chat_id, username=first_name, name=name)
-        bot.send_message(chat_id, "Привіт чим можу допомогти?", reply_markup=create_reply_markup())
+        photo_path = os.path.join(os.getcwd(), 'bot_photo', 'photo_select.jpg')
+        with open(photo_path, 'rb') as photo:
+            clear_user_context(chat_id)
+            bot.send_photo(chat_id, photo, reply_markup=create_reply_markup())
 
 
 def create_reply_markup():
@@ -89,7 +95,7 @@ def start_order(message):
     if chat_id in user_context:
         product = user_context[chat_id]['product']
         if product:
-            bot.send_message(chat_id, "Введіть точну дату та час")
+            bot.send_message(chat_id, "Введіть точну дату та час! Наприклад: «Сьогодні 14:00»")
             user_context[chat_id]['product'] = product
             bot.register_next_step_handler(message, save_order_data, product)
         else:
@@ -114,7 +120,7 @@ def choose_product(message):
         if chat_id in user_context:
             user_context[chat_id]['product'] = product
             user_context[chat_id]['step'] = 'order_service'
-            bot.send_message(chat_id, "Введіть точну дату та час")
+            bot.send_message(chat_id, "Введіть точну дату та час! Наприклад: «Сьогодні 14:00»")
             bot.register_next_step_handler(message, save_order_data, product)
         else:
             user_context[chat_id] = {'product': product, 'step': 'order_service'}
@@ -197,19 +203,35 @@ def save_order_location_text(message):
 
 
 @bot.message_handler(content_types=['contact'])
-def save_shared_contact(message):
+def handle_contact(message):
     chat_id = message.chat.id
     contact = message.contact
     try:
-        user = user_context[chat_id]['user']
-        date = user_context[chat_id]['date']
-        product = user_context[chat_id]['product']
-        location = user_context[chat_id]['location']
-        contact_info = contact.phone_number
-        order = Order.objects.filter(user=user, product=product, date=date, location=location).last()
-        order.contact = contact_info
-        order.save()
-        send_order(message, chat_id, order.product, order.date, order.location, contact_info)
+        if "step" in user_context.get(chat_id, {}) and user_context[chat_id]["step"] == "order_service":
+            save_order_contact(message, chat_id, contact.phone_number)
+        else:
+            save_question_contact(message, chat_id, contact)
+    except Exception as e:
+        bot.send_message(chat_id, f"Помилка: {str(e)}")
+
+
+def save_order_contact(message, chat_id, contact_info):
+    user = user_context[chat_id]['user']
+    date = user_context[chat_id]['date']
+    product = user_context[chat_id]['product']
+    location = user_context[chat_id]['location']
+    order = Order.objects.filter(user=user, product=product, date=date, location=location).last()
+    order.contact = contact_info
+    order.save()
+    send_order(message, chat_id, order.product, order.date, order.location, contact_info)
+
+
+def save_question_contact(message, chat_id, contact):
+    try:
+        user_profile = UserProfile.objects.get(telegram_id=chat_id)
+        question = contact.phone_number
+        question_obj = Question.objects.create(user=user_profile, question=question)
+        send_question(message, chat_id, question_obj.question)
     except Exception as e:
         bot.send_message(chat_id, f"Помилка: {str(e)}")
 
@@ -218,10 +240,10 @@ def save_shared_contact(message):
 def write_contact(message):
     chat_id = message.chat.id
     bot.send_message(chat_id, "Введіть контактні дані")
-    bot.register_next_step_handler(message, save_order_contact)
+    bot.register_next_step_handler(message, save_orders_contact)
 
 
-def save_order_contact(message):
+def save_orders_contact(message):
     chat_id = message.chat.id
     contact_info = message.text
     try:
@@ -255,7 +277,7 @@ def send_order(message, chat_id, product, date, location, contact_info):
         channel_id = -1002005268131
         bot.send_message(channel_id, caption)
 
-        bot.send_message(chat_id, 'Дякую, найближчим часом менеджер зв\'яжеться з вами')
+        bot.send_message(chat_id, 'Дякую, до 10 хвилин менеджер зв\'яжеться з Вами!')
         start(message)
         clear_user_context(chat_id)
     except Exception as e:
@@ -318,13 +340,23 @@ def contacts(message):
 @bot.message_handler(func=lambda message: message.text == "👩‍💻 Зв\'язатись з менеджером 👩‍💻")
 def question(message):
     chat_id = message.chat.id
+    markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
+    markup.add(KeyboardButton("Поділитись контактами", request_contact=True))
+    markup.add(KeyboardButton("Написати контакти"))
     photo_path = os.path.join(os.getcwd(), 'bot_photo', 'photo_contacts.jpg')
     with open(photo_path, 'rb') as photo:
-        bot.send_photo(chat_id, photo)
-    bot.register_next_step_handler(message, handle_question_description, chat_id)
+        bot.send_photo(chat_id, photo, reply_markup=markup)
 
 
-def handle_question_description(message, chat_id):
+@bot.message_handler(func=lambda message: message.text == "Написати контакти")
+def write_contact(message):
+    chat_id = message.chat.id
+    bot.send_message(chat_id, "Введіть контактні дані")
+    bot.register_next_step_handler(message, save_contact)
+
+
+def save_contact(message):
+    chat_id = message.chat.id
     user_profile = UserProfile.objects.get(telegram_id=chat_id)
     questions = message.text
     contact_obj = Question.objects.create(user=user_profile, question=questions)
@@ -336,12 +368,12 @@ def send_question(message, chat_id, question):
         caption = f"❗ Запитання ❗\n"
         user = UserProfile.objects.get(telegram_id=chat_id)
         caption += f"👤 Користувач: {user.username}\n🤖 ID: {user.telegram_id}\n"
-        caption += f"🔍 Питання клієнта: {question}\n"
+        caption += f"🔍 Номер: {question}\n"
 
         channel_id = -1002005268131
         bot.send_message(channel_id, caption)
 
-        bot.send_message(chat_id, 'Дякую, найближчим часом менеджер зв\'яжеться з вами')
+        bot.send_message(chat_id, 'Дякую, до 10 хвилин менеджер зв\'яжеться з Вами!')
         start(message)
     except Exception as e:
         bot.send_message(chat_id, f"При відправці виникла помилка: {str(e)}")
