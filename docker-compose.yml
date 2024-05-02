@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+  web:
+    build:
+      dockerfile: ./web/docker/Dockerfile
+      context: ./
+    command: gunicorn AutoBot.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - .:/AutoBot
+    expose:
+      - 8000
+    networks:
+      - app
+    depends_on:
+      - db
+    links:
+      - db
+    restart: always
+
+  db:
+    image: mysql:8.0.33
+    ports:
+      - '3123:3306'
+    environment:
+      MYSQL_DATABASE: 'AutoBot'
+      MYSQL_ROOT: 'root'
+      MYSQL_ROOT_PASSWORD: 'root'
+    volumes:
+      - ./web/mysql/data:/var/lib/mysql
+      - ./web/mysql/dump:/dump
+    networks:
+      - app
+
+  nginx:
+    build: ./web/nginx
+    volumes:
+      - .:/AutoBot
+    ports:
+      - 1223:80
+    depends_on:
+      - web
+    networks:
+      - app
+
+networks:
+  app:
+    driver: bridge
