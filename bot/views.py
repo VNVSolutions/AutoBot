@@ -55,7 +55,7 @@ def start(message):
 
 def create_reply_markup():
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    markup.add(KeyboardButton('🛞 Послуги'), KeyboardButton('Замовити послугу ✅'))
+    markup.add(KeyboardButton('🛞 Ознайомитись з послугою'), KeyboardButton('Замовити послугу ✅'))
     markup.add(KeyboardButton('📄 Історія замовлень 📄'))
     markup.add(KeyboardButton('🥇 Переваги'), KeyboardButton('Контакти 📲'))
     markup.add(KeyboardButton('👩‍💻 Зв\'язатись з менеджером 👩‍💻'))
@@ -65,7 +65,7 @@ def create_reply_markup():
 user_context = {}
 
 
-@bot.message_handler(func=lambda message: message.text == "🛞 Послуги")
+@bot.message_handler(func=lambda message: message.text == "🛞 Ознайомитись з послугою")
 def display_services(message):
     chat_id = message.chat.id
     products = Product.objects.all()
@@ -95,7 +95,7 @@ def start_order(message):
     if chat_id in user_context:
         product = user_context[chat_id]['product']
         if product:
-            bot.send_message(chat_id, "Введіть точну дату та час! Наприклад: «Сьогодні 14:00»")
+            bot.send_message(chat_id, "Введіть орієтновну дату та час! Наприклад: «Сьогодні 14:00»")
             user_context[chat_id]['product'] = product
             bot.register_next_step_handler(message, save_order_data, product)
         else:
