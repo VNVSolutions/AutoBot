@@ -27,6 +27,8 @@ SECRET_KEY = "django-insecure-=pw&xto=%fo6up%b3997bt75vy4*#^+_^$6$c)gs2xsl1#!pm*
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
+CORS_ALLOW_ALL_ORIGINS=True
+CSRF_TRUSTED_ORIGINS=['*']
 
 
 # Application definition
@@ -133,7 +135,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # URL-адреса веб-хука для отримання оновлень від Telegram
-TELEGRAM_WEBHOOK_URL = 'https://67a6-185-42-130-108.ngrok-free.app/telegram_webhook/'  # Підставте вашу URL-адресу
+TELEGRAM_WEBHOOK_URL = 'https://evakuator.club/telegram_webhook/'  # Підставте вашу URL-адресу
 
 # Встановлення налаштувань для використання веб-хука
 WEBHOOK_SETTINGS = {
