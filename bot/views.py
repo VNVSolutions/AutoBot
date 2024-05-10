@@ -95,9 +95,11 @@ def start_order(message):
     if chat_id in user_context:
         product = user_context[chat_id]['product']
         if product:
-            bot.send_message(chat_id, "Введіть орієтновну дату та час! Наприклад: «Сьогодні 14:00»")
             user_context[chat_id]['product'] = product
-            bot.register_next_step_handler(message, save_order_data, product)
+            markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
+            markup.add(KeyboardButton("Замовити негайно"))
+            markup.add(KeyboardButton("Написати дату"))
+            bot.send_message(chat_id, "Вкажіть коли потрібна послуга", reply_markup=markup)
         else:
             bot.send_message(chat_id, "Помилка: Спочатку оберіть послугу для замовлення.")
     else:
@@ -120,8 +122,10 @@ def choose_product(message):
         if chat_id in user_context:
             user_context[chat_id]['product'] = product
             user_context[chat_id]['step'] = 'order_service'
-            bot.send_message(chat_id, "Введіть точну дату та час! Наприклад: «Сьогодні 14:00»")
-            bot.register_next_step_handler(message, save_order_data, product)
+            markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
+            markup.add(KeyboardButton("Замовити негайно"))
+            markup.add(KeyboardButton("Написати дату"))
+            bot.send_message(chat_id, "Вкажіть коли потрібна послуга", reply_markup=markup)
         else:
             user_context[chat_id] = {'product': product, 'step': 'order_service'}
             question = product.question
@@ -136,14 +140,30 @@ def choose_product(message):
         bot.send_message(chat_id, "Послуга не знайдена. Будь ласка, виберіть іншу.")
 
 
-def save_order_data(message, product):
+@bot.message_handler(func=lambda message: message.text == "Написати дату")
+def write_date(message):
+    chat_id = message.chat.id
+    bot.send_message(chat_id, "Введіть дату у форматі: Сьогодні 14:00")
+    bot.register_next_step_handler(message, lambda msg: save_order_data(msg, user_context[chat_id]['product']))
+
+
+@bot.message_handler(func=lambda message: message.text == "Замовити негайно")
+def order_immediately(message):
+    save_order_data(message, "Негайно")
+
+
+def save_order_data(message, date):
     chat_id = message.chat.id
     user_input = message.text
+    product = user_context[chat_id]['product']
     try:
         user = UserProfile.objects.get(telegram_id=chat_id)
         user_context[chat_id]['user'] = user
-        user_context[chat_id]['date'] = user_input
-        user_context[chat_id]['product'] = product # Додайте product до контексту користувача
+        if date == "Негайно":
+            user_context[chat_id]['date'] = "Негайно"
+        else:
+            user_context[chat_id]['date'] = user_input
+        user_context[chat_id]['product'] = product
         markup = ReplyKeyboardMarkup(resize_keyboard=True)
         markup.add(KeyboardButton("Поділитись геолокацією", request_location=True))
         markup.add(KeyboardButton("Написати"))
@@ -151,7 +171,6 @@ def save_order_data(message, product):
 
     except Exception as e:
         bot.send_message(chat_id, f"Помилка: {str(e)}")
-
 
 
 @bot.message_handler(func=lambda message: message.text == "Написати")
