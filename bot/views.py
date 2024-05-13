@@ -44,12 +44,16 @@ def start(message):
         photo_path = os.path.join(os.getcwd(), 'bot_photo', 'photo_select.jpg')
         with open(photo_path, 'rb') as photo:
             clear_user_context(chat_id)
+            print("Виклик функції bot.send_photo")
+            print(bot.send_photo)
             bot.send_photo(chat_id, photo, reply_markup=create_reply_markup())
     except UserProfile.DoesNotExist:
         user = UserProfile.objects.create(telegram_id=chat_id, username=first_name, name=name)
         photo_path = os.path.join(os.getcwd(), 'bot_photo', 'photo_select.jpg')
         with open(photo_path, 'rb') as photo:
             clear_user_context(chat_id)
+            print("Виклик функції bot.send_photo")
+            print(bot.send_photo)
             bot.send_photo(chat_id, photo, reply_markup=create_reply_markup())
 
 
@@ -59,6 +63,8 @@ def create_reply_markup():
     markup.add(KeyboardButton('📄 Історія замовлень 📄'))
     markup.add(KeyboardButton('🥇 Переваги'), KeyboardButton('Контакти 📲'))
     markup.add(KeyboardButton('👩‍💻 Зв\'язатись з менеджером 👩‍💻'))
+    print("Кнопки меню markup")
+    print(markup)
     return markup
 
 
