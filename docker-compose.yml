@@ -5,18 +5,16 @@ services:
     build:
       dockerfile: ./web/docker/Dockerfile
       context: ./
-    command: gunicorn AutoBot.wsgi:application --bind 0.0.0.0:8000 --log-level debug
-    volumes:
-      - .:/AutoBot
+    command: /AutoBot/wait-for-it.sh db:3306 --timeout=30 -- python3 manage.py runserver 0.0.0.0:8000
     environment:
      - PYTHONUNBUFFERED=TRUE
-    expose:
-      - 8000
+    volumes:
+      - .:/AutoBot
+    ports:
+      - "8002:8000"
     networks:
       - app
     depends_on:
-      - db
-    links:
       - db
 
   db:
