@@ -128,7 +128,7 @@ def choose_product(message):
             markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
             markup.add(KeyboardButton("Замовити ✅"))
             markup.add(KeyboardButton("Назад 🔙"))
-            bot.send_message(chat_id, "Оберіть яка послуга цікавить 👇", reply_markup=markup)
+            bot.send_message(chat_id, "Оберіть дію 👇", reply_markup=markup)
     else:
         bot.send_message(chat_id, "Послуга не знайдена. Будь ласка, виберіть іншу.")
 
