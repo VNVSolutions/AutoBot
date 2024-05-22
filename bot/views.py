@@ -41,20 +41,12 @@ def start(message):
     name = message.chat.username
     try:
         user = UserProfile.objects.get(telegram_id=chat_id)
-        photo_path = os.path.join(os.getcwd(), 'bot_photo', 'photo_select.jpg')
-        with open(photo_path, 'rb') as photo:
-            clear_user_context(chat_id)
-            print("Виклик функції bot.send_photo")
-            print(bot.send_photo)
-            bot.send_photo(chat_id, photo, reply_markup=create_reply_markup())
+        clear_user_context(chat_id)
+        bot.send_message(chat_id, "Оберіть дію", reply_markup=create_reply_markup())
     except UserProfile.DoesNotExist:
         user = UserProfile.objects.create(telegram_id=chat_id, username=first_name, name=name)
-        photo_path = os.path.join(os.getcwd(), 'bot_photo', 'photo_select.jpg')
-        with open(photo_path, 'rb') as photo:
-            clear_user_context(chat_id)
-            print("Виклик функції bot.send_photo")
-            print(bot.send_photo)
-            bot.send_photo(chat_id, photo, reply_markup=create_reply_markup())
+        clear_user_context(chat_id)
+        bot.send_message(chat_id, "Оберіть дію", reply_markup=create_reply_markup())
 
 
 def create_reply_markup():
@@ -78,9 +70,7 @@ def display_services(message):
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
     for product in products:
         markup.add(KeyboardButton(product.name))
-    photo_path = os.path.join(os.getcwd(), 'bot_photo', 'photo_service.jpg')
-    with open(photo_path, 'rb') as photo:
-        bot.send_photo(chat_id, photo, reply_markup=markup)
+    bot.send_message(chat_id, "Оберіть яка послуга цікавить", reply_markup=markup)
 
 
 @bot.message_handler(func=lambda message: message.text == "Замовити послугу ✅")
@@ -91,9 +81,8 @@ def order_service(message):
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
     for product in products:
         markup.add(KeyboardButton(product.name))
-    photo_path = os.path.join(os.getcwd(), 'bot_photo', 'photo_service.jpg')
-    with open(photo_path, 'rb') as photo:
-        bot.send_photo(chat_id, photo, reply_markup=markup)
+    bot.send_message(chat_id, "Оберіть яка послуга цікавить", reply_markup=markup)
+
 
 @bot.message_handler(func=lambda message: message.text == "Замовити ✅")
 def start_order(message):
@@ -139,9 +128,7 @@ def choose_product(message):
             markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
             markup.add(KeyboardButton("Замовити ✅"))
             markup.add(KeyboardButton("Назад 🔙"))
-            photo_path = os.path.join(os.getcwd(), 'bot_photo', 'photo_select.jpg')
-            with open(photo_path, 'rb') as photo:
-                bot.send_photo(chat_id, photo, reply_markup=markup)
+            bot.send_message(chat_id, "Оберіть яка послуга цікавить", reply_markup=markup)
     else:
         bot.send_message(chat_id, "Послуга не знайдена. Будь ласка, виберіть іншу.")
 
@@ -368,9 +355,7 @@ def question(message):
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
     markup.add(KeyboardButton("Поділитись контактами", request_contact=True))
     markup.add(KeyboardButton("Написати контакти"))
-    photo_path = os.path.join(os.getcwd(), 'bot_photo', 'photo_contacts.jpg')
-    with open(photo_path, 'rb') as photo:
-        bot.send_photo(chat_id, photo, reply_markup=markup)
+    bot.send_message(chat_id, "Напишіть контактні дані, менеджер зв\'яжеться з вами", reply_markup=markup)
 
 
 @bot.message_handler(func=lambda message: message.text == "Написати контакти")
