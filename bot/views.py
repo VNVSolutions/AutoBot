@@ -42,11 +42,11 @@ def start(message):
     try:
         user = UserProfile.objects.get(telegram_id=chat_id)
         clear_user_context(chat_id)
-        bot.send_message(chat_id, "Оберіть дію", reply_markup=create_reply_markup())
+        bot.send_message(chat_id, "Оберіть дію 👇", reply_markup=create_reply_markup())
     except UserProfile.DoesNotExist:
         user = UserProfile.objects.create(telegram_id=chat_id, username=first_name, name=name)
         clear_user_context(chat_id)
-        bot.send_message(chat_id, "Оберіть дію", reply_markup=create_reply_markup())
+        bot.send_message(chat_id, "Оберіть дію 👇", reply_markup=create_reply_markup())
 
 
 def create_reply_markup():
@@ -70,7 +70,7 @@ def display_services(message):
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
     for product in products:
         markup.add(KeyboardButton(product.name))
-    bot.send_message(chat_id, "Оберіть яка послуга цікавить", reply_markup=markup)
+    bot.send_message(chat_id, "Оберіть яка послуга цікавить 👇", reply_markup=markup)
 
 
 @bot.message_handler(func=lambda message: message.text == "Замовити послугу ✅")
@@ -81,7 +81,7 @@ def order_service(message):
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
     for product in products:
         markup.add(KeyboardButton(product.name))
-    bot.send_message(chat_id, "Оберіть яка послуга цікавить", reply_markup=markup)
+    bot.send_message(chat_id, "Оберіть яка послуга цікавить 👇", reply_markup=markup)
 
 
 @bot.message_handler(func=lambda message: message.text == "Замовити ✅")
@@ -128,7 +128,7 @@ def choose_product(message):
             markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
             markup.add(KeyboardButton("Замовити ✅"))
             markup.add(KeyboardButton("Назад 🔙"))
-            bot.send_message(chat_id, "Оберіть яка послуга цікавить", reply_markup=markup)
+            bot.send_message(chat_id, "Оберіть яка послуга цікавить 👇", reply_markup=markup)
     else:
         bot.send_message(chat_id, "Послуга не знайдена. Будь ласка, виберіть іншу.")
 
@@ -355,7 +355,7 @@ def question(message):
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
     markup.add(KeyboardButton("Поділитись контактами", request_contact=True))
     markup.add(KeyboardButton("Написати контакти"))
-    bot.send_message(chat_id, "Напишіть контактні дані, менеджер зв\'яжеться з вами", reply_markup=markup)
+    bot.send_message(chat_id, "Напишіть контактні дані, менеджер зв\'яжеться з вами 👇", reply_markup=markup)
 
 
 @bot.message_handler(func=lambda message: message.text == "Написати контакти")
