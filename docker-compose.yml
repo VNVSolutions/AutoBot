@@ -5,7 +5,7 @@ services:
     build:
       dockerfile: ./web/docker/Dockerfile
       context: ./
-    command: gunicorn AutoBot.wsgi:application --bind 0.0.0.0:8000
+    command: bash -c "export DJANGO_SETTINGS_MODULE=AutoBot.settings && python -c 'from bot.conf import set_webhook; set_webhook()'; gunicorn AutoBot.wsgi:application --bind 0.0.0.0:8000"
     environment:
      - PYTHONUNBUFFERED=TRUE
     volumes:
