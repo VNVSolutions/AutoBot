@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "bot"
+    "bot",
+    "django_celery_beat"
 ]
 
 MIDDLEWARE = [
@@ -134,21 +135,30 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# URL-адреса веб-хука для отримання оновлень від Telegram
-TELEGRAM_WEBHOOK_URL = 'https://evakuator.club/telegram_webhook/'  # Підставте вашу URL-адресу
-
-# Встановлення налаштувань для використання веб-хука
-WEBHOOK_SETTINGS = {
-    'url': TELEGRAM_WEBHOOK_URL,
-    'allowed_updates': ['message', 'callback_query']
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+    },
 }
 
-# Налаштування для телеграм-бота
-TELEGRAM_BOT_SETTINGS = {
-    'token': '6452560014:AAEW22uvw4bMEU5FWVUBvRgbfnHbqdnyxzE',  # Підставте ваш токен
-    'webhook': WEBHOOK_SETTINGS
-}
+CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
 
-# Додайте ці рядки коду, щоб використовувати налаштування веб-хука та токена бота
-BOT_TOKEN = TELEGRAM_BOT_SETTINGS['token']
-WEBHOOK_URL = TELEGRAM_BOT_SETTINGS['webhook']['url']
+BOT_TOKEN = '6452560014:AAEW22uvw4bMEU5FWVUBvRgbfnHbqdnyxzE'
+WEBHOOK_URL = 'https://evakuator.club/telegram_webhook/'

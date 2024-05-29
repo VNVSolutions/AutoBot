@@ -22,6 +22,7 @@ from .models import Preference
 from .models import Question
 from .models import Contacts
 from .models import ContactsLink
+from .tasks import process_telegram_update
 from .conf import bot
 
 

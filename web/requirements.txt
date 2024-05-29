@@ -13,7 +13,7 @@ django-crontab==0.7.1
 PySocks==1.7.1
 django-cron
 django-admin-rangefilter==0.10.0
-celery==5.2.7
 redis==4.5.5
 python-crontab==2.7.1
 django-admin-rangefilter
+django-celery-beat==2.2.1

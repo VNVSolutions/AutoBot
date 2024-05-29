@@ -1,13 +1,13 @@
-from time import sleep
-
+# conf.py
 import telebot
+from django.conf import settings
 
-TOKEN = '6452560014:AAEW22uvw4bMEU5FWVUBvRgbfnHbqdnyxzE'
-
-bot = telebot.TeleBot(TOKEN)
-
+bot = telebot.TeleBot(settings.BOT_TOKEN)
 
 def set_webhook():
-    from django.conf import settings
     bot.remove_webhook()
-    bot.set_webhook(url=settings.WEBHOOK_URL)
+    success = bot.set_webhook(url=settings.WEBHOOK_URL)
+    if success:
+        print("Вебхук успішно встановлено")
+    else:
+        print("Не вдалося встановити вебхук")

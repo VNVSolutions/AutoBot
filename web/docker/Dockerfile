@@ -10,6 +10,6 @@ COPY web/requirements.txt /AutoBot/
 
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-RUN apt-get update && apt-get install -y cron
+COPY . /AutoBot/
 
-ADD . /AutoBot/
+CMD ["gunicorn", "--workers=3", "--bind=0.0.0.0:8000", "AutoBot.wsgi:application"]

@@ -5,7 +5,6 @@ services:
     build:
       dockerfile: ./web/docker/Dockerfile
       context: ./
-    command: bash -c "export DJANGO_SETTINGS_MODULE=AutoBot.settings && python -c 'from bot.conf import set_webhook; set_webhook()'; gunicorn AutoBot.wsgi:application --bind 0.0.0.0:8000"
     environment:
      - PYTHONUNBUFFERED=TRUE
     volumes:
@@ -16,6 +15,11 @@ services:
       - app
     depends_on:
       - db
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
 
   db:
     image: mysql:8.0.33
@@ -31,16 +35,37 @@ services:
     networks:
       - app
 
-  nginx:
-    build: ./web/nginx
-    volumes:
-      - .:/AutoBot
-    ports:
-      - 1223:80
-    depends_on:
-      - web
+  redis:
+    image: "redis:alpine"
     networks:
       - app
+
+  celery:
+    build:
+      context: ./
+      dockerfile: ./web/docker/Dockerfile
+    command: celery -A AutoBot worker --loglevel=info
+    volumes:
+      - .:/AutoBot
+    networks:
+      - app
+    depends_on:
+      - redis
+      - web
+
+  celery-beat:
+    build:
+      context: ./
+      dockerfile: ./web/docker/Dockerfile
+    command: celery -A AutoBot beat -l info --scheduler django_celery_beat.schedulers.DatabaseScheduler
+    volumes:
+      - .:/AutoBot
+    networks:
+      - app
+    depends_on:
+      - redis
+      - celery
+      - web
 
 networks:
   app:
