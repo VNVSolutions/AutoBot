@@ -1,3 +1,5 @@
+import logging
+
 import telebot
 import string
 import os
@@ -23,9 +25,9 @@ from .models import Question
 from .models import Contacts
 from .models import ContactsLink
 from .tasks import process_telegram_update
+from .conf import bot
 
-
-bot = telebot.TeleBot(settings.BOT_TOKEN)
+logger = logging.getLogger(__name__)
 
 user_context = {}
 
@@ -33,10 +35,13 @@ user_context = {}
 @csrf_exempt
 def telegram_webhook(request):
     if request.method == 'POST':
-        update = telebot.types.Update.de_json(request.body.decode('utf-8'))
-        bot.process_new_updates([update])
-        return HttpResponse('')
-    return HttpResponse('Invalid request method')
+        try:
+            update_data = request.body.decode('utf-8')
+            process_telegram_update.delay(update_data)
+            logger.info(f"Отримане оновлення з webhook: {update_data}")
+            return HttpResponse('')
+        except Exception as e:
+            logger.error(f"Помилка обробки вебхуку: {str(e)}")
 
 
 @bot.message_handler(commands=['start'])

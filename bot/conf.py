@@ -2,7 +2,8 @@
 import telebot
 from django.conf import settings
 
-bot = telebot.TeleBot(settings.BOT_TOKEN)
+bot = telebot.TeleBot(settings.BOT_TOKEN, threaded=False)
+
 
 def set_webhook():
     bot.remove_webhook()
