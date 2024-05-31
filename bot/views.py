@@ -23,7 +23,11 @@ from .models import Question
 from .models import Contacts
 from .models import ContactsLink
 from .tasks import process_telegram_update
-from .conf import bot
+
+
+bot = telebot.TeleBot(settings.BOT_TOKEN)
+
+user_context = {}
 
 
 @csrf_exempt
@@ -39,15 +43,13 @@ def telegram_webhook(request):
 def start(message):
     chat_id = message.chat.id
     first_name = message.chat.first_name
-    name = message.chat.username
+    username = message.chat.username
     try:
-        user = UserProfile.objects.get(telegram_id=chat_id)
+        user, created = UserProfile.objects.get_or_create(telegram_id=chat_id, defaults={'username': first_name, 'name': username})
         clear_user_context(chat_id)
         bot.send_message(chat_id, "Оберіть дію 👇", reply_markup=create_reply_markup())
-    except UserProfile.DoesNotExist:
-        user = UserProfile.objects.create(telegram_id=chat_id, username=first_name, name=name)
-        clear_user_context(chat_id)
-        bot.send_message(chat_id, "Оберіть дію 👇", reply_markup=create_reply_markup())
+    except Exception as e:
+        bot.send_message(chat_id, f"Помилка: {str(e)}")
 
 
 def create_reply_markup():
@@ -59,9 +61,6 @@ def create_reply_markup():
     print("Кнопки меню markup")
     print(markup)
     return markup
-
-
-user_context = {}
 
 
 @bot.message_handler(func=lambda message: message.text == "🛞 Ознайомитись з послугою")
