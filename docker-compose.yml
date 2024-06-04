@@ -67,6 +67,17 @@ services:
       - celery
       - web
 
+  nginx:
+    build: ./web/nginx
+    volumes:
+      - .:/AutoBot
+    ports:
+      - 1223:80
+    depends_on:
+      - web
+    networks:
+      - app
+
 networks:
   app:
     driver: bridge
